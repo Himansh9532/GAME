@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Math Addition Game</title>
+  <style>
+   body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f8ff;
+  text-align: center;
+  padding: 80px 40px 40px; 
+}
+
+    .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #00796b;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  z-index: 1000;
+}
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+
+    #question {
+      font-size: 2rem;
+      margin: 20px 0;
+    }
+
+    input {
+      font-size: 1.2rem;
+      padding: 10px;
+      width: 100px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #007BFF;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #timer {
+      font-size: 1.5rem;
+      color: #ff0000;
+    }
+
+    #feedback {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+
+    #score {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <a href="home.html">Home</a>
+    <a href="addition.html"> Addition</a>
+    <a href="subtraction.html"> Subtraction</a>
+    <a href="multiplication.html"> Multiplication</a>
+    <a href="division.html"> Division</a>
+  </div>
+
+  <img src="iKIT-LAB-logo-png.webp" alt="i-KIT LAB Logo" style="width: 200px; margin-bottom: 20px;">
+  <h1>🧠 Math Addition Challenge</h1>
+
+  <div class="container">
+    <div id="round">Round 1</div>
+    <div id="timer">Time Left: 30s</div>
+    <div id="question"></div>
+    <input type="number" id="answer" placeholder="Your answer" />
+    <br/>
+    <button onclick="submitAnswer()">Submit</button>
+    <div id="feedback"></div>
+    <div id="score"></div>
+  </div>
+
+  <script>
+    let round = 1;
+    let correctAnswer = 0;
+    let timer = 30;
+    let timerInterval;
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let totalQuestions = 0;
+
+    function getRandomNumber(round) {
+      if (round === 1) return Math.floor(Math.random() * 90 + 10);       // 10–99
+      if (round === 2) return Math.floor(Math.random() * 900 + 100);     // 100–999
+      return Math.floor(Math.random() * 900 + 100);                      // Round 3 also moderate difficulty
+    }
+
+    function generateQuestion() {
+      const num1 = getRandomNumber(round);
+      const num2 = getRandomNumber(round);
+      correctAnswer = num1 + num2;
+      document.getElementById("question").innerText = `${num1} + ${num2} = ?`;
+      document.getElementById("answer").value = "";
+      document.getElementById("feedback").innerText = "";
+    }
+
+    function submitAnswer() {
+      const userAnswer = parseInt(document.getElementById("answer").value);
+      if (isNaN(userAnswer)) {
+        document.getElementById("feedback").innerText = "⚠️ Please enter a number.";
+        return;
+      }
+
+      totalQuestions++;
+
+      if (userAnswer === correctAnswer) {
+        correctCount++;
+        document.getElementById("feedback").innerText = "✅ That's correct!";
+      } else {
+        incorrectCount++;
+        document.getElementById("feedback").innerText = `❌ Wrong! The answer was ${correctAnswer} (Negative marks!)`;
+      }
+
+      updateScore();
+
+      if (totalQuestions >= 5) {
+        evaluateRound();
+      } else {
+        generateQuestion();
+      }
+    }
+
+    function updateScore() {
+      document.getElementById("score").innerText = `✅ Correct: ${correctCount} | ❌ Wrong: ${incorrectCount}`;
+    }
+
+    function evaluateRound() {
+      clearInterval(timerInterval);
+      if (correctCount >= 3) {
+        if (round === 3) {
+          document.getElementById("question").innerText = "🎉 You Win All Rounds!";
+          endGame();
+        } else {
+          round++;
+          resetRound();
+          document.getElementById("round").innerText = `Round ${round}`;
+          startRound();
+        }
+      } else {
+        document.getElementById("question").innerText = "❌ You did not qualify for the next round.";
+        endGame();
+      }
+    }
+
+    function resetRound() {
+      correctCount = 0;
+      incorrectCount = 0;
+      totalQuestions = 0;
+      updateScore();
+    }
+
+    function endGame() {
+      document.getElementById("timer").style.display = "none";
+      document.getElementById("answer").style.display = "none";
+      document.querySelector("button").style.display = "none";
+    }
+
+    function startTimer() {
+      timer = 30;
+      document.getElementById("timer").innerText = `Time Left: ${timer}s`;
+
+      timerInterval = setInterval(() => {
+        timer--;
+        document.getElementById("timer").innerText = `Time Left: ${timer}s`;
+        if (timer === 0) {
+          clearInterval(timerInterval);
+          document.getElementById("feedback").innerText = `⏰ Time's up!`;
+          setTimeout(evaluateRound, 1000);
+        }
+      }, 1000);
+    }
+
+    function startRound() {
+      generateQuestion();
+      startTimer();
+    }
+
+    // Start game on page load
+    startRound();
+  </script>
+</body>
+</html>
